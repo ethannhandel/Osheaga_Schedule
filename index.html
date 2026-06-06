@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Osheaga 2026 — Group Picks</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+#app{max-width:960px;margin:0 auto;padding:1.5rem 1rem 4rem}
+
+/* Landing */
+.landing{max-width:480px;margin:4rem auto;background:#fff;border-radius:16px;padding:2.5rem;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.landing h1{font-size:24px;font-weight:600;margin-bottom:4px}
+.landing .sub{font-size:13px;color:#888;margin-bottom:1.5rem}
+.landing .instructions{background:#f5f5f3;border-radius:10px;padding:1rem;font-size:13px;color:#555;line-height:1.6;margin-bottom:1.5rem}
+.landing .instructions b{color:#1a1a1a}
+.landing input{width:100%;font-size:15px;padding:10px 14px;border-radius:10px;border:1.5px solid #ddd;margin-bottom:8px;outline:none;transition:border .15s}
+.landing input:focus{border-color:#7C5CBF}
+.landing button.primary{width:100%;padding:11px;font-size:14px;font-weight:600;border-radius:10px;border:none;background:#7C5CBF;color:#fff;cursor:pointer;transition:opacity .15s}
+.landing button.primary:hover{opacity:.9}
+.landing .resume-section{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #eee}
+.landing .resume-section .rlabel{font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.resume-list{display:flex;flex-wrap:wrap;gap:6px}
+.resume-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;transition:border .15s}
+.resume-btn:hover{border-color:#7C5CBF}
+.error{font-size:12px;color:#c0392b;margin-top:6px}
+
+/* Nav */
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
+.topbar h1{font-size:20px;font-weight:600}
+.topbar .meta{font-size:12px;color:#888;margin-top:1px}
+.topbar .user-chip{display:flex;align-items:center;gap:6px;font-size:13px;color:#555}
+.topbar .switch-btn{font-size:12px;color:#aaa;background:none;border:none;cursor:pointer;padding:4px 6px;margin-left:4px}
+.saving{font-size:11px;color:#aaa}
+.main-nav{display:flex;gap:0;border-bottom:1.5px solid #e0e0e0;margin-bottom:1.5rem}
+.main-nav button{background:none;border:none;border-bottom:2.5px solid transparent;padding:8px 16px;font-size:13px;cursor:pointer;color:#888;margin-bottom:-1.5px;transition:all .15s}
+.main-nav button.active{color:#1a1a1a;font-weight:600;border-bottom-color:#7C5CBF}
+.day-tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap}
+.day-tabs button{padding:6px 18px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid #ddd;background:#fff;transition:all .15s;font-weight:500}
+.day-tabs button.active{background:#7C5CBF;color:#fff;border-color:#7C5CBF}
+
+/* Schedule */
+.schedule-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.schedule-grid{display:grid;min-width:620px;position:relative}
+.stage-headers{display:grid;gap:0;margin-bottom:0;position:sticky;top:0;z-index:10;background:#f5f5f3;padding-bottom:4px}
+.stage-header{font-size:11px;font-weight:700;text-align:center;padding:6px 4px;letter-spacing:.05em;text-transform:uppercase;border-radius:6px 6px 0 0}
+.schedule-body{display:flex;position:relative}
+.time-col{width:44px;flex-shrink:0;position:relative}
+.time-label{position:absolute;font-size:10px;color:#aaa;right:6px;transform:translateY(-50%);white-space:nowrap}
+.stages-area{display:grid;flex:1;gap:0;position:relative}
+.stage-col{position:relative;border-left:1px solid #e8e8e8;min-height:100%}
+.set-block{position:absolute;left:3px;right:3px;border-radius:8px;cursor:pointer;padding:6px 7px;border:1.5px solid transparent;transition:all .15s;user-select:none;overflow:hidden}
+.set-block:hover{filter:brightness(.95)}
+.set-block .set-name{font-size:11px;font-weight:700;line-height:1.2;margin-bottom:2px}
+.set-block .set-time{font-size:9px;opacity:.7;margin-bottom:3px}
+.set-block .set-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+.set-block .set-dot{width:7px;height:7px;border-radius:50%}
+.set-block.selected{border-width:2px}
+.set-block.conflict{border-color:#e74c3c!important;background:#fee!important;animation:pulse .6s ease-in-out}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* Popup */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem}
+.popup{background:#fff;border-radius:14px;padding:1.5rem;max-width:340px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.popup h3{font-size:16px;font-weight:600;margin-bottom:2px}
+.popup .ptime{font-size:12px;color:#888;margin-bottom:1rem}
+.popup .pickers-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.popup .picker-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.popup .close-btn{width:100%;padding:9px;border-radius:8px;border:1px solid #ddd;background:#f5f5f3;font-size:13px;cursor:pointer;font-weight:500}
+
+/* Matching */
+.match-section{margin-bottom:2rem}
+.section-label{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.match-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:1rem}
+.match-card{background:#fff;border-radius:12px;padding:14px;border:1px solid #eee}
+.match-card .pair{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12px;color:#888;flex-wrap:wrap}
+.match-card .pct{font-size:26px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
+.match-card .shared-n{font-size:11px;color:#aaa;margin-bottom:6px}
+.shared-tags{display:flex;flex-wrap:wrap;gap:3px}
+.shared-tag{font-size:10px;padding:2px 7px;border-radius:10px;background:#f5f5f3;color:#555;border:1px solid #e8e8e8}
+.cluster-card{background:#fff;border-radius:12px;padding:14px;border:1px solid #eee;margin-bottom:8px}
+.cluster-card .cluster-people{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.cluster-card .cluster-sets{display:flex;flex-wrap:wrap;gap:3px}
+.cluster-card .cluster-count{font-size:11px;color:#888;margin-bottom:6px}
+
+/* Footer */
+.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #e8e8e8;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#aaa}
+.footer .fu{display:flex;align-items:center;gap:4px;color:#555}
+.empty{font-size:13px;color:#aaa;text-align:center;padding:3rem 0}
+
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)}
+
+@media(max-width:600px){
+  .main-nav button{padding:7px 10px;font-size:12px}
+  .match-cards{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty">Loading…</div></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,setDoc,onSnapshot,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── REPLACE THESE WITH YOUR NEW FIREBASE PROJECT VALUES ──
+const FB_CONFIG={
+  apiKey:"AIzaSyAyqH4oO5Krd4t-BUz348lB_we-XcrrRzc",
+  authDomain:"osheaga-v2.firebaseapp.com",
+  projectId:"osheaga-v2",
+  appId:"1:898837529144:web:0d3279928da4b87488dccd",
+};
+// ─────────────────────────────────────────────────────────
+
+const fbApp=initializeApp(FB_CONFIG);
+const db=getFirestore(fbApp);
+const DOC=doc(db,"group","picks");
+
+const PALETTE=[
+  "#E05A2B","#7C5CBF","#2196A8","#D4A017","#2E8B57",
+  "#C2185B","#1565C0","#6D4C41","#00838F","#AD1457",
+  "#E91E63","#FF5722","#607D8B","#8BC34A","#FF9800",
+  "#9C27B0","#03A9F4","#795548","#4CAF50","#F44336"
+];
+
+const STAGE_COLORS={
+  River:   {bg:"#ddeeff",border:"#93c5fd",text:"#1d4ed8",header:"#3b82f6"},
+  Mountain:{bg:"#dcfce7",border:"#86efac",text:"#166534",header:"#22c55e"},
+  Island:  {bg:"#ffe4e1",border:"#fca5a5",text:"#991b1b",header:"#f87171"},
+  Forest:  {bg:"#fce7f3",border:"#f9a8d4",text:"#9d174d",header:"#ec4899"},
+  Valley:  {bg:"#ccfbf1",border:"#5eead4",text:"#115e59",header:"#14b8a6"},
+  Backyard:{bg:"#fef9c3",border:"#fde047",text:"#854d0e",header:"#eab308"},
+};
+
+const STAGES=["River","Mountain","Island","Forest","Valley","Backyard"];
+
+// Times as minutes since midnight
+const t=s=>{const[h,m]=s.split(":").map(Number);return h*60+m};
+const fmt=m=>{const h=Math.floor(m/60)%24,min=m%60,ap=h>=12?"PM":"AM",hh=h>12?h-12:h||12;return`${hh}:${String(min).padStart(2,"0")} ${ap}`};
+
+const SCHEDULE={
+  Friday:[
+    {stage:"River",    name:"Super Plage",          start:t("14:00"),end:t("14:40")},
+    {stage:"River",    name:"Wunderhorse",           start:t("15:20"),end:t("16:05")},
+    {stage:"River",    name:"Wet Leg",               start:t("16:50"),end:t("17:40")},
+    {stage:"River",    name:"The Neighbourhood",     start:t("18:40"),end:t("19:40")},
+    {stage:"River",    name:"Twenty One Pilots",     start:t("21:05"),end:t("22:45"),headliner:true},
+    {stage:"Mountain", name:"Rio Kosta",             start:t("14:40"),end:t("15:20")},
+    {stage:"Mountain", name:"Wolf Alice",            start:t("16:05"),end:t("16:50")},
+    {stage:"Mountain", name:"Kehlani",               start:t("17:40"),end:t("18:40")},
+    {stage:"Mountain", name:"The xx",                start:t("19:40"),end:t("20:55")},
+    {stage:"Island",   name:"Moses Belanger",        start:t("14:00"),end:t("15:00")},
+    {stage:"Island",   name:"Baalti",                start:t("15:00"),end:t("16:10")},
+    {stage:"Island",   name:"Vandelux",              start:t("16:15"),end:t("17:25")},
+    {stage:"Island",   name:"MPH",                   start:t("17:30"),end:t("18:40")},
+    {stage:"Island",   name:"VTSS",                  start:t("18:40"),end:t("19:50")},
+    {stage:"Island",   name:"Brutalismus 3000",      start:t("20:10"),end:t("21:10")},
+    {stage:"Island",   name:"Amelie Lens",           start:t("21:25"),end:t("22:45")},
+    {stage:"Forest",   name:"Whatmore",              start:t("15:10"),end:t("15:55")},
+    {stage:"Forest",   name:"Amber Mark",            start:t("16:40"),end:t("17:25")},
+    {stage:"Forest",   name:"Max McNown",            start:t("18:10"),end:t("18:55")},
+    {stage:"Forest",   name:"YOASOBI",               start:t("19:45"),end:t("20:35")},
+    {stage:"Forest",   name:"Geese",                 start:t("21:40"),end:t("22:55")},
+    {stage:"Valley",   name:"Avenoir",               start:t("14:30"),end:t("15:10")},
+    {stage:"Valley",   name:"Jim Legxacy",           start:t("15:55"),end:t("16:40")},
+    {stage:"Valley",   name:"Billie Marten",         start:t("17:25"),end:t("18:10")},
+    {stage:"Valley",   name:"Bob Moses",             start:t("18:55"),end:t("19:45")},
+    {stage:"Valley",   name:"JID",                   start:t("20:35"),end:t("21:35")},
+    {stage:"Backyard", name:"Berlam",                start:t("17:00"),end:t("17:30")},
+    {stage:"Backyard", name:"Oliver Forest",         start:t("18:15"),end:t("18:45")},
+    {stage:"Backyard", name:"Lou Val",               start:t("19:30"),end:t("20:00")},
+  ],
+  Saturday:[
+    {stage:"River",    name:"Baby Nova",             start:t("14:00"),end:t("14:40")},
+    {stage:"River",    name:"Wolf Parade",           start:t("15:20"),end:t("16:05")},
+    {stage:"River",    name:"Mt. Joy",               start:t("18:40"),end:t("19:55")},
+    {stage:"River",    name:"Tate McRae",            start:t("21:20"),end:t("22:35"),headliner:true},
+    {stage:"Mountain", name:"Stella Lefty",          start:t("14:40"),end:t("15:20")},
+    {stage:"Mountain", name:"Finn Wolfhard",         start:t("16:05"),end:t("16:50")},
+    {stage:"Mountain", name:"Malcolm Todd",          start:t("17:40"),end:t("18:40")},
+    {stage:"Mountain", name:"Sombr",                 start:t("19:55"),end:t("21:10")},
+    {stage:"Island",   name:"Laura Scavo",           start:t("14:00"),end:t("14:55")},
+    {stage:"Island",   name:"Airrica",               start:t("15:00"),end:t("16:00")},
+    {stage:"Island",   name:"Villager",              start:t("16:00"),end:t("17:05")},
+    {stage:"Island",   name:"Moonshine",             start:t("17:05"),end:t("18:30")},
+    {stage:"Island",   name:"Zulan",                 start:t("18:30"),end:t("19:35")},
+    {stage:"Island",   name:"It's Murph",            start:t("19:35"),end:t("20:40")},
+    {stage:"Island",   name:"Odd Mob",               start:t("20:40"),end:t("21:45")},
+    {stage:"Island",   name:"Kettama",               start:t("21:45"),end:t("22:55")},
+    {stage:"Forest",   name:"Fanclubwallet",         start:t("14:00"),end:t("14:40")},
+    {stage:"Forest",   name:"Kingfishr",             start:t("15:20"),end:t("16:00")},
+    {stage:"Forest",   name:"PartyOf2",              start:t("16:40"),end:t("17:25")},
+    {stage:"Forest",   name:"Little Simz",           start:t("18:10"),end:t("18:55")},
+    {stage:"Forest",   name:"Franz Ferdinand",       start:t("19:45"),end:t("20:35")},
+    {stage:"Forest",   name:"Empire of the Sun",     start:t("21:40"),end:t("22:55")},
+    {stage:"Valley",   name:"Ecca Vandal",           start:t("14:40"),end:t("15:20")},
+    {stage:"Valley",   name:"Bar Italia",            start:t("16:00"),end:t("16:40")},
+    {stage:"Valley",   name:"AJ Tracey",             start:t("17:25"),end:t("18:10")},
+    {stage:"Valley",   name:"Viagra Boys",           start:t("18:55"),end:t("19:45")},
+    {stage:"Valley",   name:"Turnstile",             start:t("20:35"),end:t("21:35")},
+    {stage:"Backyard", name:"Museums",               start:t("16:00"),end:t("16:30")},
+    {stage:"Backyard", name:"Grand Eugène",          start:t("17:15"),end:t("17:45")},
+    {stage:"Backyard", name:"Virginie B",            start:t("18:30"),end:t("19:00")},
+  ],
+  Sunday:[
+    {stage:"River",    name:"Valley",                start:t("14:00"),end:t("14:40")},
+    {stage:"River",    name:"CMAT",                  start:t("15:20"),end:t("16:05")},
+    {stage:"River",    name:"Mother Mother",         start:t("16:50"),end:t("17:45")},
+    {stage:"River",    name:"Zara Larsson",          start:t("18:40"),end:t("19:40")},
+    {stage:"River",    name:"Lorde",                 start:t("21:00"),end:t("22:30"),headliner:true},
+    {stage:"Mountain", name:"Amble",                 start:t("14:40"),end:t("15:20")},
+    {stage:"Mountain", name:"Spacey Jane",           start:t("16:05"),end:t("16:50")},
+    {stage:"Mountain", name:"Clipse",                start:t("17:45"),end:t("18:40")},
+    {stage:"Mountain", name:"Gunna",                 start:t("19:45"),end:t("20:45")},
+    {stage:"Island",   name:"Delavelour",            start:t("14:00"),end:t("15:15")},
+    {stage:"Island",   name:"Zoe Gitter",            start:t("15:20"),end:t("16:25")},
+    {stage:"Island",   name:"Bambii",                start:t("16:25"),end:t("17:25")},
+    {stage:"Island",   name:"DJ Trixie Mattel",      start:t("17:25"),end:t("18:30")},
+    {stage:"Island",   name:"SG Lewis",              start:t("18:40"),end:t("19:40")},
+    {stage:"Island",   name:"HorsegiirL",            start:t("20:00"),end:t("21:00")},
+    {stage:"Island",   name:"Space 92 × POPOF",      start:t("21:15"),end:t("22:30")},
+    {stage:"Forest",   name:"Between Friends",       start:t("14:40"),end:t("15:20")},
+    {stage:"Forest",   name:"Sofia Isella",          start:t("16:00"),end:t("16:45")},
+    {stage:"Forest",   name:"Paris Paloma",          start:t("17:30"),end:t("18:15")},
+    {stage:"Forest",   name:"Not For Radio",         start:t("19:05"),end:t("20:05")},
+    {stage:"Forest",   name:"Major Lazer",           start:t("21:15"),end:t("22:30")},
+    {stage:"Valley",   name:"Tia Wood",              start:t("14:00"),end:t("14:40")},
+    {stage:"Valley",   name:"Mico",                  start:t("15:20"),end:t("16:00")},
+    {stage:"Valley",   name:"Oklou",                 start:t("16:45"),end:t("17:30")},
+    {stage:"Valley",   name:"Of Monsters and Men",   start:t("18:15"),end:t("19:05")},
+    {stage:"Valley",   name:"Subtronics",            start:t("20:05"),end:t("21:10")},
+    {stage:"Backyard", name:"Aviv",                  start:t("16:00"),end:t("16:30")},
+    {stage:"Backyard", name:"Billie du Page",        start:t("17:15"),end:t("17:45")},
+    {stage:"Backyard", name:"Fernie",                start:t("18:30"),end:t("19:00")},
+  ]
+};
+
+// ── State ──
+let db_state={users:[]};
+let currentUser=null;
+let view="schedule";
+let activeDay="Friday";
+let saving=false;
+let nameError="";
+let popup=null; // {set, day}
+let onLanding=true;
+
+// ── Firebase ──
+onSnapshot(DOC,snap=>{
+  if(snap.exists()){
+    db_state=snap.data();
+    if(currentUser){const u=db_state.users.find(x=>x.id===currentUser.id);if(u)currentUser=u;}
+    render();
+  }
+});
+getDoc(DOC).then(snap=>{if(snap.exists())db_state=snap.data();render();}).catch(()=>render());
+
+async function save(){
+  saving=true;render();
+  try{await setDoc(DOC,db_state);}catch(e){console.error(e);}
+  saving=false;render();
+}
+
+// ── Helpers ──
+function contrast(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(r*299+g*587+b*114)/1000>128?"#000":"#fff";
+}
+function avatar(name,color,size=28){
+  const ini=name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  return`<div class="avatar"style="width:${size}px;height:${size}px;background:${color};color:${contrast(color)};font-size:${Math.round(size*.38)}px;">${ini}</div>`;
+}
+function setKey(day,set){return`${day}||${set.stage}||${set.name}`;}
+function userPicked(user,day,set){return user.picks&&user.picks.includes(setKey(day,set));}
+function pickersOf(day,set){return db_state.users.filter(u=>userPicked(u,day,set));}
+
+function overlapMins(a,b){return Math.max(0,Math.min(a.end,b.end)-Math.max(a.start,b.start));}
+
+function conflictSets(user,day){
+  const picked=SCHEDULE[day].filter(s=>userPicked(user,day,s));
+  const conflicts=new Set();
+  for(let i=0;i<picked.length;i++)for(let j=i+1;j<picked.length;j++){
+    if(overlapMins(picked[i],picked[j])>30){
+      conflicts.add(setKey(day,picked[i]));
+      conflicts.add(setKey(day,picked[j]));
+    }
+  }
+  return conflicts;
+}
+
+function sharedSets(a,b){
+  if(!a.picks||!b.picks)return[];
+  return a.picks.filter(p=>b.picks.includes(p));
+}
+function overlapPct(a,b){
+  if(!a.picks||!b.picks)return 0;
+  const union=new Set([...(a.picks||[]),...(b.picks||[])]);
+  if(!union.size)return 0;
+  return Math.round(sharedSets(a,b).length/union.size*100);
+}
+
+// ── Schedule render ──
+function renderSchedule(){
+  const sets=SCHEDULE[activeDay];
+  const minTime=Math.min(...sets.map(s=>s.start));
+  const maxTime=Math.max(...sets.map(s=>s.end));
+  const totalMins=maxTime-minTime;
+  const PX_PER_MIN=2.2;
+  const totalH=totalMins*PX_PER_MIN;
+  const TIME_COL=44;
+  const conflicts=currentUser?conflictSets(currentUser,activeDay):new Set();
+
+  // time labels every 30 min
+  let timeLabels="";
+  for(let m=minTime;m<=maxTime;m+=30){
+    const top=(m-minTime)*PX_PER_MIN;
+    timeLabels+=`<div class="time-label"style="top:${top}px">${fmt(m)}</div>`;
+  }
+
+  // horizontal hour lines
+  let hLines="";
+  for(let m=minTime;m<=maxTime;m+=60){
+    const top=(m-minTime)*PX_PER_MIN;
+    hLines+=`<div style="position:absolute;left:0;right:0;top:${top}px;border-top:1px solid #ececec;z-index:0;pointer-events:none"></div>`;
+  }
+
+  const stageGridCols=`${TIME_COL}px repeat(${STAGES.length},1fr)`;
+
+  const stageHeaders=STAGES.map(s=>{
+    const c=STAGE_COLORS[s];
+    return`<div class="stage-header"style="color:${c.header};background:${c.bg};">${s==="Backyard"?"Backyard":s}</div>`;
+  }).join("");
+
+  const stageCols=STAGES.map(stage=>{
+    const stageSets=sets.filter(s=>s.stage===stage);
+    const blocks=stageSets.map(set=>{
+      const top=(set.start-minTime)*PX_PER_MIN;
+      const h=(set.end-set.start)*PX_PER_MIN;
+      const c=STAGE_COLORS[stage];
+      const picked=currentUser&&userPicked(currentUser,activeDay,set);
+      const isConflict=conflicts.has(setKey(activeDay,set));
+      const pickers=pickersOf(activeDay,set);
+      const dots=pickers.map(u=>`<div class="set-dot"style="background:${u.color}"></div>`).join("");
+      let bg=c.bg,border=c.border;
+      if(isConflict){bg="#fee2e2";border="#ef4444";}
+      else if(picked&&currentUser){bg=`${currentUser.color}22`;border=currentUser.color;}
+      const bold=set.headliner?"font-weight:800;":"";
+      const key=setKey(activeDay,set).replace(/'/g,"\\'");
+      return`<div class="set-block${picked?" selected":""}${isConflict?" conflict":""}"
+        style="top:${top}px;height:${h}px;background:${bg};border-color:${border};"
+        onclick="handleSetClick('${key}')"
+        oncontextmenu="handleSetInfo(event,'${key}')">
+        <div class="set-name"style="${bold}color:${isConflict?"#991b1b":c.text}">${set.name}</div>
+        <div class="set-time"style="color:${c.text}">${fmt(set.start)}–${fmt(set.end)}</div>
+        ${pickers.length?`<div class="set-dots">${dots}</div>`:""}
+      </div>`;
+    }).join("");
+    return`<div class="stage-col"style="height:${totalH}px;position:relative;">${blocks}</div>`;
+  }).join("");
+
+  return`
+    <div class="day-tabs">
+      ${["Friday","Saturday","Sunday"].map(d=>`<button class="${d===activeDay?"active":""}"onclick="setDay('${d}')">${d}</button>`).join("")}
+    </div>
+    <p style="font-size:11px;color:#aaa;margin-bottom:10px">Tap a set to select it. Right-click (or long-press) to see who's going. Conflicts (30+ min overlap) highlight red.</p>
+    <div class="schedule-wrap">
+      <div style="display:grid;grid-template-columns:${stageGridCols};gap:0;margin-bottom:4px;padding-left:0">
+        <div></div>${stageHeaders}
+      </div>
+      <div style="display:grid;grid-template-columns:${stageGridCols};gap:0">
+        <div class="time-col"style="height:${totalH}px;position:relative">${timeLabels}</div>
+        <div style="grid-column:2/-1;display:grid;grid-template-columns:repeat(${STAGES.length},1fr);position:relative">
+          ${hLines}${stageCols}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Matching render ──
+function renderMatching(){
+  if(!currentUser)return`<p class="empty">Join to see your matches.</p>`;
+  const others=db_state.users.filter(u=>u.id!==currentUser.id);
+  if(!others.length)return`<p class="empty">No one else has joined yet.</p>`;
+
+  // ranked pairs
+  const pairs=others.map(u=>({user:u,pct:overlapPct(currentUser,u),shared:sharedSets(currentUser,u)}))
+    .sort((a,b)=>b.pct-a.pct);
+
+  const pairCards=pairs.map(({user,pct,shared})=>{
+    const tags=shared.slice(0,5).map(k=>{
+      const parts=k.split("||");return`<span class="shared-tag">${parts[2]}</span>`;
+    }).join("")+(shared.length>5?`<span class="shared-tag">+${shared.length-5}</span>`:"");
+    return`<div class="match-card">
+      <div class="pair">${avatar(currentUser.name,currentUser.color,20)}<span>+</span>${avatar(user.name,user.color,20)}<span>${user.name}</span></div>
+      <div class="pct">${pct}%</div>
+      <div class="shared-n">${shared.length} set${shared.length!==1?"s":""} in common</div>
+      <div class="shared-tags">${tags}</div>
+    </div>`;
+  }).join("");
+
+  // clusters: group people who share ≥3 sets with current user
+  // find common sets across subgroups
+  const usersWithPicks=db_state.users.filter(u=>u.picks&&u.picks.length);
+  const clusterMap={};
+  usersWithPicks.forEach(u=>{
+    if(!u.picks)return;
+    u.picks.forEach(p=>{
+      if(!clusterMap[p])clusterMap[p]=[];
+      clusterMap[p].push(u);
+    });
+  });
+  // top shared sets (3+ people want it)
+  const hotSets=Object.entries(clusterMap)
+    .filter(([,users])=>users.length>=3)
+    .sort((a,b)=>b[1].length-a[1].length)
+    .slice(0,8);
+
+  const clusterCards=hotSets.map(([key,users])=>{
+    const parts=key.split("||");
+    const setName=parts[2],day=parts[0];
+    const avatars=users.map(u=>avatar(u.name,u.color,24)).join("");
+    return`<div class="cluster-card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:3px">${setName}</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:8px">${day}</div>
+      <div class="cluster-people">${avatars}</div>
+      <div style="font-size:11px;color:#888">${users.length} people want this set</div>
+    </div>`;
+  }).join("")||`<p class="empty" style="padding:1rem 0">Not enough picks yet to find clusters.</p>`;
+
+  return`
+    <div class="match-section">
+      <div class="section-label">Your matches — ranked by overlap</div>
+      <div class="match-cards">${pairCards}</div>
+    </div>
+    <div class="match-section">
+      <div class="section-label">Most-wanted sets (3+ people)</div>
+      ${clusterCards}
+    </div>`;
+}
+
+// ── Popup ──
+function renderPopup(){
+  if(!popup)return"";
+  const{day,key}=popup;
+  const set=SCHEDULE[day].find(s=>setKey(day,s)===key);
+  if(!set)return"";
+  const pickers=pickersOf(day,set);
+  const rows=pickers.length
+    ?pickers.map(u=>`<div class="picker-row">${avatar(u.name,u.color,24)}<span>${u.name}</span></div>`).join("")
+    :`<div style="font-size:13px;color:#aaa">Nobody has selected this set yet.</div>`;
+  return`<div class="popup-overlay"onclick="closePopup()">
+    <div class="popup"onclick="event.stopPropagation()">
+      <h3>${set.name}</h3>
+      <div class="ptime">${set.stage} · ${fmt(set.start)}–${fmt(set.end)}</div>
+      <div class="pickers-list">${rows}</div>
+      <button class="close-btn"onclick="closePopup()">Close</button>
+    </div>
+  </div>`;
+}
+
+// ── Main render ──
+function render(){
+  if(onLanding){renderLanding();return;}
+
+  const topbar=`<div class="topbar">
+    <div>
+      <div style="font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Osheaga 2026</div>
+      <h1>Group Picks</h1>
+      <div class="meta">July 31–Aug 2 · Parc Jean-Drapeau, Montreal</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      ${saving?`<span class="saving">Saving…</span>`:""}
+      ${currentUser?`<div class="user-chip">${avatar(currentUser.name,currentUser.color,28)}<span>${currentUser.name}</span><button class="switch-btn"onclick="doSwitch()">switch</button></div>`:`<button onclick="doSwitch()"style="font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer">Join / switch</button>`}
+    </div>
+  </div>`;
+
+  const nav=`<nav class="main-nav">
+    <button class="${view==="schedule"?"active":""}"onclick="setView('schedule')">Schedule</button>
+    <button class="${view==="matching"?"active":""}"onclick="setView('matching')">Matching</button>
+  </nav>`;
+
+  let main="";
+  if(view==="schedule")main=renderSchedule();
+  else main=renderMatching();
+
+  const footer=`<div class="footer">
+    <span>In the group (${db_state.users.length}):</span>
+    ${db_state.users.map(u=>`<div class="fu">${avatar(u.name,u.color,18)}<span>${u.name}(${(u.picks||[]).length})</span></div>`).join("")}
+  </div>`;
+
+  document.getElementById("app").innerHTML=topbar+nav+main+footer+renderPopup();
+}
+
+function renderLanding(){
+  const resumeSection=db_state.users.length?`
+    <div class="resume-section">
+      <div class="rlabel">Or resume as</div>
+      <div class="resume-list">
+        ${db_state.users.map(u=>`<button class="resume-btn"onclick="doResume('${u.id}')">${avatar(u.name,u.color,20)}<span>${u.name}</span></button>`).join("")}
+      </div>
+    </div>`:"";
+
+  document.getElementById("app").innerHTML=`
+    <div class="landing">
+      <h1>Osheaga 2026</h1>
+      <div class="sub">July 31–Aug 2 · Parc Jean-Drapeau, Montreal</div>
+      <div class="instructions">
+        <b>How it works:</b><br>
+        1. Enter your name and tap Join.<br>
+        2. On the <b>Schedule</b> tab, tap any set to select it — your picks are saved instantly and shared with the group.<br>
+        3. If two of your selected sets overlap by more than 30 minutes, they'll turn red as a conflict warning.<br>
+        4. Tap a set a second time to deselect it.<br>
+        5. Right-click (or long-press on mobile) any set to see who else is going.<br>
+        6. Visit the <b>Matching</b> tab to see how much overlap you have with each friend.
+      </div>
+      <input id="name-input"placeholder="Your name"onkeydown="if(event.key==='Enter')doJoin()"/>
+      ${nameError?`<div class="error">${nameError}</div>`:""}
+      <button class="primary"onclick="doJoin()">Join →</button>
+      ${resumeSection}
+    </div>`;
+}
+
+// ── Actions ──
+window.doJoin=()=>{
+  const name=(document.getElementById("name-input")||{value:""}).value.trim();
+  if(!name)return;
+  if(db_state.users.find(u=>u.name.toLowerCase()===name.toLowerCase())){
+    nameError="That name is taken — pick another or resume below.";render();return;
+  }
+  const used=db_state.users.map(u=>u.color);
+  const color=PALETTE.find(c=>!used.includes(c))||PALETTE[db_state.users.length%PALETTE.length];
+  const user={id:String(Date.now()),name,color,picks:[]};
+  db_state={...db_state,users:[...db_state.users,user]};
+  currentUser=user;onLanding=false;nameError="";
+  save();
+};
+window.doResume=id=>{
+  currentUser=db_state.users.find(u=>u.id===id)||null;
+  onLanding=false;render();
+};
+window.doSwitch=()=>{onLanding=true;currentUser=null;render();};
+window.setView=v=>{view=v;render();};
+window.setDay=d=>{activeDay=d;render();};
+
+window.handleSetClick=key=>{
+  if(!currentUser){onLanding=true;render();return;}
+  const picks=currentUser.picks||[];
+  currentUser={...currentUser,picks:picks.includes(key)?picks.filter(p=>p!==key):[...picks,key]};
+  db_state={...db_state,users:db_state.users.map(u=>u.id===currentUser.id?currentUser:u)};
+  save();
+};
+window.handleSetInfo=(e,key)=>{
+  e.preventDefault();
+  popup={day:activeDay,key};render();
+};
+window.closePopup=()=>{popup=null;render();};
+
+// Long press for mobile
+let pressTimer=null;
+document.addEventListener("touchstart",e=>{
+  const el=e.target.closest(".set-block");
+  if(!el)return;
+  pressTimer=setTimeout(()=>{
+    const key=el.getAttribute("onclick").match(/'([^']+)'/)[1];
+    popup={day:activeDay,key};render();
+  },500);
+},{passive:true});
+document.addEventListener("touchend",()=>{clearTimeout(pressTimer);},{passive:true});
+
+render();
+</script>
+</body>
+</html>
